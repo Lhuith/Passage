@@ -25,12 +25,7 @@ public class Atmosphere_Manager : MonoBehaviour
         float fInnerRadius = skyMat.GetFloat("_fInnerRadius");
         float fScaleDepth = skyMat.GetFloat("_fScaleDepth");      
         float fScale = 1 / (fOuterRadius - fInnerRadius);
-
-        if(skyMat.shader.name == "Custom / SkyFromSpace")
-        {
-            float _G = skyMat.GetFloat("_G");
-            skyMat.SetFloat("_G2", _G * _G);
-        }
+        float G = skyMat.GetFloat("_G");
 
         Vector4 v3InWaveLength = new Vector4(
         1.0f / Mathf.Pow(0.650f, 4),
@@ -47,6 +42,7 @@ public class Atmosphere_Manager : MonoBehaviour
         skyMat.SetFloat("_fScale", fScale);
         skyMat.SetFloat("_fInvScaleDepth", 1.0f / fScaleDepth);
         skyMat.SetFloat("_fScaleOverScaleDepth", fScale / fScaleDepth);
+        skyMat.SetFloat("_G2", G * G);
     }
 
 }   
