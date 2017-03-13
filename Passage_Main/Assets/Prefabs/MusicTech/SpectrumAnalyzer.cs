@@ -6,7 +6,7 @@ public class SpectrumAnalyzer : MonoBehaviour {
 
 	GameObject[] cubes, spheres;
 	public List<GameObject> cellList = new List<GameObject>();
-	Vector3 cubeScale, sphereScale;
+	Vector3 cubeScale;
     MeshRenderer meshColor;
 	public float freqBoost, cellfreqBoost;
 	AudioClip[] songs;
@@ -58,49 +58,47 @@ public class SpectrumAnalyzer : MonoBehaviour {
 		}
 			
 		cubeScale = new Vector3 (1,1,1);
-		sphereScale = new Vector3 (1,1,1);
-		//float[] spectrum = AudioListener.GetOutputData(1024, 0);
-
-		//cubes = GameObject.FindGameObjectsWithTag ("Cubes");
-		float[] spectrum = AudioListener.GetSpectrumData (1024, 0, FFTWindow.Hamming);
-
+        //float[] samples = AudioListener.GetOutputData(1024, 0);
+        float[] samples = new float[1024];
+        //cubes = GameObject.FindGameObjectsWithTag ("Cubes");
+        AudioListener.GetSpectrumData (samples, 0, FFTWindow.Hamming);
+  
 
 		//Cubes
-		float c0 = spectrum[1] + spectrum[2];
-		float c022 = spectrum[2] + spectrum[3];
-		float c025 = spectrum[3] + spectrum[4];
-		float c1 = spectrum[4] + spectrum[5];
-		float c2 = spectrum[4] + spectrum[5] + spectrum[6];
-		float c22 = spectrum[6] + spectrum[7]+ spectrum[8];
-		float c25 = spectrum[7] + spectrum[8] + spectrum[9];
-		float c3 = spectrum[9] + spectrum[10] + spectrum[11];
-		float c32 = spectrum[11] + spectrum[12] + spectrum[13];
-		float c35 = spectrum[13] + spectrum[14] + spectrum[15];
-		float c4 = spectrum[15] + spectrum[16] + spectrum[17];
-		float c42 = spectrum [17] + spectrum [18] + spectrum [19];
-		float c45 = spectrum[19] + spectrum[20] + spectrum[21];
-		float c47 = spectrum[21] + spectrum[22] + spectrum[23];
-		float c5 = spectrum[23] + spectrum[24] + spectrum[25];
-		float c55 = spectrum [25] + spectrum [26] + spectrum [27];
-		float c6 = spectrum [27] + spectrum [28] + spectrum [29];
-		float c62 = spectrum [29] + spectrum [30] + spectrum [31];
-		float c65 = spectrum [31] + spectrum [32] + spectrum [33];
-		float c67 = spectrum [33] + spectrum [34] + spectrum [35];
-		float c7 = spectrum [35] + spectrum [36] + spectrum [37];
-		float c72 = spectrum [37] + spectrum [38] + spectrum [39];
-		float c75 = spectrum [39] + spectrum [41] + spectrum [41];
-		float c77 = spectrum [41] + spectrum [42] + spectrum [43];
-		float c8 = spectrum [43] + spectrum [44] + spectrum [45];
-		float c82 = spectrum [45] + spectrum [46] + spectrum [47];
-		float c85 = spectrum [47] + spectrum [48] + spectrum [49];
-		float c87 = spectrum [49] + spectrum [50] + spectrum [51];
-		float c9 = spectrum [51] + spectrum [52] + spectrum [53];
-		float c92 = spectrum [53] + spectrum [54] + spectrum [55];
+		float c0 = samples[1] + samples[2];
+		float c022 = samples[2] + samples[3];
+		float c025 = samples[3] + samples[4];
+		float c1 = samples[4] + samples[5];
+		float c2 = samples[4] + samples[5] + samples[6];
+		float c22 = samples[6] + samples[7]+ samples[8];
+		float c25 = samples[7] + samples[8] + samples[9];
+		float c3 = samples[9] + samples[10] + samples[11];
+		float c32 = samples[11] + samples[12] + samples[13];
+		float c35 = samples[13] + samples[14] + samples[15];
+		float c4 = samples[15] + samples[16] + samples[17];
+		float c42 = samples [17] + samples [18] + samples [19];
+		float c45 = samples[19] + samples[20] + samples[21];
+		float c47 = samples[21] + samples[22] + samples[23];
+		float c5 = samples[23] + samples[24] + samples[25];
+		float c55 = samples [25] + samples [26] + samples [27];
+		float c6 = samples [27] + samples [28] + samples [29];
+		float c62 = samples [29] + samples [30] + samples [31];
+		float c65 = samples [31] + samples [32] + samples [33];
+		float c67 = samples [33] + samples [34] + samples [35];
+		float c7 = samples [35] + samples [36] + samples [37];
+		float c72 = samples [37] + samples [38] + samples [39];
+		float c75 = samples [39] + samples [41] + samples [41];
+		float c77 = samples [41] + samples [42] + samples [43];
+		float c8 = samples [43] + samples [44] + samples [45];
+		float c82 = samples [45] + samples [46] + samples [47];
+		float c85 = samples [47] + samples [48] + samples [49];
+		float c87 = samples [49] + samples [50] + samples [51];
+		float c9 = samples [51] + samples [52] + samples [53];
+		float c92 = samples [53] + samples [54] + samples [55];
 
          pump = ((c0 + c022 + c025 + c1 + c2 + c22 + c25 + c3 + c32 + c35 + c4 + c42 + c45 + c47 +
             c5 + c55 + c6 + c62 + c65 + c67 + c7 + c72 + c75 + c77 + c8 + c82 + c85 + c87 + c9 + c92) / 30) * freqBoost;
-        MapGenerator mapGen = FindObjectOfType<MapGenerator>();
-        mapGen.GenerateFunk(pump);
+
 
         for (int i = 0; i < cubes.Length; i++) {
 			switch (cubes [i].name)
@@ -275,7 +273,7 @@ public class SpectrumAnalyzer : MonoBehaviour {
 		}
 
 
-		//Debug.Log("LOW: " + spectrum[0]);
+		//Debug.Log("LOW: " + samples[0]);
 		/* c1 = 64hz
 		 * c3 = 256hz
 		 * c4 = 512hz

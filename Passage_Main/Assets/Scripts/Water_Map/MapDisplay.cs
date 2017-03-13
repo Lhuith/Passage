@@ -7,6 +7,11 @@ public class MapDisplay : MonoBehaviour {
     public MeshFilter meshFilter;
     public MeshRenderer meshRenderer;
 
+    public void Awake()
+    {
+        meshFilter.gameObject.SetActive(false);
+    }
+
     public void DrawTexture(Texture2D texture)
     {
         textureRenderer.sharedMaterial.mainTexture = texture;

@@ -1,11 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
+using System.Threading;
+using System.Collections.Generic;
 
 public class MapGenerator : MonoBehaviour {
 
-    public int mapWidth;
-    public int mapHeight;
+
+    public HeightMap.NormalizeMode normalizeMode;
+
+    public const int MapChunkSize = 241;
+
+    [Range(0,6)]
+    public int EditorPreviewLOD;
+
     public float heightScale;
+
+    public AnimationCurve meshHeightCurve;
 
     public int octaves;
     [Range(0, 1)]
@@ -19,55 +30,118 @@ public class MapGenerator : MonoBehaviour {
 
     public bool autoUpdate;
 
-    public MeshRenderer renderer;
+    Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
+    Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
 
-    public MapDisplay display;
-
-    public void GenerateMap()
+    public void DrawMapInEditor()
     {
-        //float[,] heightMap = HeightMap.GenerateHeightMap(mapWidth, mapHeight, seed, heightScale, octaves, persistance, lacunarity, offset);      
-        //display.DrawMesh(MeshGenerator.GenerataTerrainMesh(heightMap, meshHeightMultiplier), TextureGenerator.TextureFromHeightMap(heightMap));
+        MapData mapData = GenerateMapData(Vector2.zero);
+
+        MapDisplay display = FindObjectOfType<MapDisplay>();
+        display.DrawMesh(MeshGenerator.GenerataTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, EditorPreviewLOD), TextureGenerator.TextureFromHeightMap(mapData.heightMap));
     }
 
-    public void GenerateFunk(float VolumePump)
-    {
-        float[,] heightMap = HeightMap.GenerateHeightMap(mapWidth, mapHeight, seed, heightScale, octaves, persistance, lacunarity, offset);
 
-        FunkyMeshGenerator funkyGen = GetComponent<FunkyMeshGenerator>();
-        funkyGen.DrawFunkyMesh(mapWidth, mapHeight, seed, heightScale, octaves, persistance, lacunarity, offset, VolumePump);
+    public void RequestMapData(Vector2 centre, Action<MapData> callback)
+    {
+        ThreadStart threadStart = delegate
+        {
+            MapDataThread(centre,callback);
+        };
+
+        new Thread(threadStart).Start();
+    }
+
+    void MapDataThread(Vector2 centre, Action<MapData> callback)
+    {
+        MapData mapData = GenerateMapData(centre);
+
+        lock(mapDataThreadInfoQueue)
+        {
+            mapDataThreadInfoQueue.Enqueue(new MapThreadInfo<MapData>(callback, mapData));
+        }
+    }
+
+    public void RequestMeshData(MapData mapData, int lod,  Action<MeshData> callback)
+    {
+        ThreadStart threadStart = delegate
+        {
+            MeshDataThread(mapData, lod, callback);
+        };
+
+        new Thread(threadStart).Start();
+    }
+
+    void MeshDataThread(MapData mapData, int lod, Action<MeshData> callback)
+    {
+        MeshData meshData = MeshGenerator.GenerataTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
+
+        lock(meshDataThreadInfoQueue)
+        {
+            meshDataThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(callback, meshData));
+        }
+    }
+
+    public void Start()
+    {
+
     }
 
     public void Update()
     {
-      
+        if(mapDataThreadInfoQueue.Count > 0)
+        {
+            for(int i = 0; i < mapDataThreadInfoQueue.Count; i++)
+            {
+                MapThreadInfo<MapData> threadInfo = mapDataThreadInfoQueue.Dequeue();
+                threadInfo.callback(threadInfo.parametre);
+            }
+        }
+
+        if(meshDataThreadInfoQueue.Count > 0)
+        {
+            for(int i = 0; i < meshDataThreadInfoQueue.Count; i++)
+            {
+                MapThreadInfo<MeshData> threadInfo = meshDataThreadInfoQueue.Dequeue();
+                threadInfo.callback(threadInfo.parametre);
+            }
+        }
     }
 
-    //void OnValidate()
-    //{
-    //    if(mapWidth < 1)
-    //    {
-    //        mapWidth = 1;
-    //    }
-    //
-    //    if (mapHeight < 1)
-    //    {
-    //        mapHeight = 1;
-    //    }
-    //
-    //    if (heightScale < 1)
-    //    {
-    //        heightScale = 1;
-    //    }
-    //
-    //
-    //    if (lacunarity < 1)
-    //    {
-    //        lacunarity = 1;
-    //    }
-    //
-    //    if (octaves < 0)
-    //    {
-    //        octaves = 1;
-    //    }
-    //}
+    MapData GenerateMapData(Vector2 centre)
+    {
+        float[,] heightMap = HeightMap.GenerateHeightMap(MapChunkSize, MapChunkSize, seed, heightScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
+        return new MapData(heightMap);
+    }
+
+
+   void OnValidate()
+   { 
+       if (heightScale < 1)  heightScale = 1;         
+       if (lacunarity < 1) lacunarity = 1;   
+       if (octaves < 0) octaves = 1;
+   }
+
+    struct MapThreadInfo<T>
+    {
+        public readonly Action<T> callback;
+        public readonly T parametre;
+
+        public MapThreadInfo(Action<T> _callback, T _parametre)
+        {
+            this.callback = _callback;
+            this.parametre = _parametre;
+        }
+    }
+}
+
+
+public struct MapData
+{
+    public readonly float[,] heightMap;
+
+    public MapData(float[,] heightMap)
+    {
+        this.heightMap = heightMap;
+    }
 }
