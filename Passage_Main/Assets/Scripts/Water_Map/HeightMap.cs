@@ -80,7 +80,7 @@ public static class HeightMap
                 }
                 else
                 {
-                    float normalizedHeight = (heightMap[x, y] + 1) / (maxPossibleHeight / 1.25f);
+                    float normalizedHeight = (heightMap[x, y] + 1) / ( maxPossibleHeight / 0.9f);
                     heightMap[x, y] = Mathf.Clamp(normalizedHeight, 0 , int.MaxValue);
                 }
             }

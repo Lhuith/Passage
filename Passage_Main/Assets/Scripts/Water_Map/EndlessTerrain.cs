@@ -87,7 +87,7 @@ public class EndlessTerrain : MonoBehaviour {
         MeshFilter meshFilter;
         MeshCollider meshCollider;
 
-        InterActiveWaves waves;
+        PaintTest paint;
 
         LODinfo[] detailLevels;
         LODMesh[] lodMeshes;
@@ -95,6 +95,8 @@ public class EndlessTerrain : MonoBehaviour {
         MapData mapData;
         bool mapDataRecieved;
         int prevoisLODIndex = -1;
+
+        
 
         public TerrainChunk(Vector2 coord, int size, LODinfo[] detailLevels, Transform parent, Material mat)
         {
@@ -107,8 +109,9 @@ public class EndlessTerrain : MonoBehaviour {
             meshObject = new GameObject("Ocean Chunk");
             meshRenderer = meshObject.AddComponent<MeshRenderer>();
             meshFilter = meshObject.AddComponent<MeshFilter>();
-            //waves = meshObject.AddComponent<InterActiveWaves>();
-            
+            meshCollider = meshObject.AddComponent<MeshCollider>();
+            //meshCollider.size = new Vector3(size, 1, size);
+            paint = meshObject.AddComponent<PaintTest>();
             meshObject.transform.position = postionV3;
             meshObject.transform.parent = parent;
             meshObject.GetComponent<MeshRenderer>().material = mat;
@@ -164,6 +167,7 @@ public class EndlessTerrain : MonoBehaviour {
                         {
                             prevoisLODIndex = lodIndex;
                             meshFilter.mesh = lodMesh.mesh;
+                            meshCollider.sharedMesh = lodMesh.mesh;
                         }
                         else if (!lodMesh.hasRequested)
                         {

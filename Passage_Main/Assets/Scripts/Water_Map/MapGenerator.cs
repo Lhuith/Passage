@@ -82,11 +82,6 @@ public class MapGenerator : MonoBehaviour {
         }
     }
 
-    public void Start()
-    {
-
-    }
-
     public void Update()
     {
         if(mapDataThreadInfoQueue.Count > 0)

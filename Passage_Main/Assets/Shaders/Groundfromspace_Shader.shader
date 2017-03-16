@@ -21,8 +21,7 @@ Shader "Custom/Test/Ground_From_Space"
 	SubShader
 	{
 	 Pass{
-	Tags { "Queue" = "Background" "RenderType" = "Background" "PreviewType" = "Skybox" }
-	  Cull Off ZWrite Off
+	Tags { "LightMode" = "ForwardBase"  }
  	 
 	 CGPROGRAM
 	 #pragma vertex vert
