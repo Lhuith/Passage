@@ -6,6 +6,7 @@ public static class TextureGenerator
     public static Texture2D TextureFromColorMap(Color[] colorMap, int width, int height)
     {
         Texture2D texture = new Texture2D(width, height);
+        texture.filterMode = FilterMode.Point;
         texture.SetPixels(colorMap);
         texture.Apply();
         return texture;
@@ -18,11 +19,14 @@ public static class TextureGenerator
 
         Color[] colorMap = new Color[width * height];
 
+        Color bBlue = new Color(0.447f, 0.670f, 0.874f, 1f);
+        Color lGreen = new Color(0.094f, 0.505f, 0.427f, 1f);
+
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                colorMap[y * width + x] = Color.Lerp(Color.black, Color.white, heightMap[x, y]);
+                colorMap[y * width + x] = Color.Lerp(lGreen, bBlue, heightMap[x, y]);
             }
         }
 

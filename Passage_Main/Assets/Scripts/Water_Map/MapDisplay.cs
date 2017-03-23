@@ -9,7 +9,7 @@ public class MapDisplay : MonoBehaviour {
 
     public void Awake()
     {
-        meshFilter.gameObject.SetActive(false);
+        //meshFilter.gameObject.SetActive(false);
     }
 
     public void DrawTexture(Texture2D texture)

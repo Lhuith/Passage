@@ -2,6 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 
+[System.Serializable]
+public class DynamicInformation
+{
+    public Material mat;
+    public Texture quadTexture;
+    public Texture intialTexture;
+    public float updateInterval;
+
+    DynamicInformation(Material _mat, Texture _intialTex, float _interval)
+    {
+        mat = mat;
+        intialTexture = _intialTex;
+        updateInterval = _interval;
+    }
+
+}
+[System.Serializable]
 public class EndlessTerrain : MonoBehaviour {
 
     const float viewerMoveThresholdforChunkUpdate = 25f;
@@ -24,6 +41,8 @@ public class EndlessTerrain : MonoBehaviour {
 
     Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>();
     static List<TerrainChunk> terrainChunksVisableLastUpdate = new List<TerrainChunk>();
+
+    public DynamicInformation dynamicInfo;
 
     void Start()
     {
@@ -71,7 +90,7 @@ public class EndlessTerrain : MonoBehaviour {
                 }
                 else
                 {
-                    terrainChunkDictionary.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunksize, detialLevels, transform, OceanMaterial));
+                    terrainChunkDictionary.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunksize, detialLevels, transform, OceanMaterial, dynamicInfo));
                 }
             }
         }
@@ -88,6 +107,7 @@ public class EndlessTerrain : MonoBehaviour {
         MeshCollider meshCollider;
 
         PaintTest paint;
+        DynamicApplyShader dynamicApply;
 
         LODinfo[] detailLevels;
         LODMesh[] lodMeshes;
@@ -98,7 +118,7 @@ public class EndlessTerrain : MonoBehaviour {
 
         
 
-        public TerrainChunk(Vector2 coord, int size, LODinfo[] detailLevels, Transform parent, Material mat)
+        public TerrainChunk(Vector2 coord, int size, LODinfo[] detailLevels, Transform parent, Material mat, DynamicInformation _dynamicInfo)
         {
             this.detailLevels = detailLevels;
 
@@ -110,7 +130,12 @@ public class EndlessTerrain : MonoBehaviour {
             meshRenderer = meshObject.AddComponent<MeshRenderer>();
             meshFilter = meshObject.AddComponent<MeshFilter>();
             meshCollider = meshObject.AddComponent<MeshCollider>();
-            //meshCollider.size = new Vector3(size, 1, size);
+            dynamicApply = meshObject.AddComponent<DynamicApplyShader>();
+
+            //dynamicApply.mat = _dynamicInfo.mat;
+            dynamicApply.updateInterval = _dynamicInfo.updateInterval;
+            dynamicApply.IntialTexture = _dynamicInfo.intialTexture;
+
             paint = meshObject.AddComponent<PaintTest>();
             meshObject.transform.position = postionV3;
             meshObject.transform.parent = parent;
@@ -168,6 +193,7 @@ public class EndlessTerrain : MonoBehaviour {
                             prevoisLODIndex = lodIndex;
                             meshFilter.mesh = lodMesh.mesh;
                             meshCollider.sharedMesh = lodMesh.mesh;
+
                         }
                         else if (!lodMesh.hasRequested)
                         {

@@ -8,6 +8,7 @@ public static class HeightMap
 
     public static float[,] GenerateHeightMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset, NormalizeMode normalizeMode)
     {
+
         float[,] heightMap = new float[mapWidth, mapHeight];
 
         System.Random prng = new System.Random(seed);
