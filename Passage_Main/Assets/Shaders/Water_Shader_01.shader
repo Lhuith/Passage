@@ -3,13 +3,12 @@
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
-		_DynamicTex ("Texture", 2D) = "white" {}
+		_DynamicTex("Texture", 2D) = "white" {}
 
 	}
 	SubShader
 	{
 		Tags { "RenderType"="Opaque" }
-		LOD 100
 
 		Pass
 		{
@@ -43,12 +42,24 @@
 				dyno.a = 0;
 
 				v.vertex.y += 1 - dyno.a * 10;
-
 				v.vertex.z -=  dyno.a * 10;
 				v.vertex.z +=  dyno.a * 10;
 
+				float A = 5;
+				float L = 50;
+				float w = 2 * 3.1416 / L;
+				float Q = 0.5;
+
+				float3 p0 = v.vertex.xyz;
+				float2 D = float2(0, 1);
+				float dotD = dot(p0.xz, D);
+				float C = cos(w * dotD + _Time.y /100);
+				float S = sin(w * dotD + _Time.y /100);
+
+				float3 P = float3 (p0.x + Q * A * C * D.x, A * S, p0.z + Q * A * C * D.y);
+				 
 				//v.vertex.y *= 1 - dyno.a;
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = mul(UNITY_MATRIX_MVP, float4(P, 1));
 				o.uv = v.texcoord;
 				
 
@@ -70,5 +81,6 @@
 			}
 			ENDCG
 		}
+
 	}
 }

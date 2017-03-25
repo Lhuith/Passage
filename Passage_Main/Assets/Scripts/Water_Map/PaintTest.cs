@@ -10,7 +10,7 @@ public class PaintTest : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
-        viewer = GameObject.Find("Anus").transform;
+        viewer = GameObject.Find("Cube").transform;
     }
 	
 	// Update is called once per frame

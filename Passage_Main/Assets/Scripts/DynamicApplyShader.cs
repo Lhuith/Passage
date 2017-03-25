@@ -19,7 +19,7 @@ public class DynamicApplyShader : MonoBehaviour {
     void Start ()
     {
         texture = new RenderTexture(256, 256, 16);
-        viewer = GameObject.Find("Anus").transform;
+        viewer = GameObject.Find("Cube").transform;
         mat = new Material(Shader.Find("Test/Smoke"));
         mat.name = transform.name;
         Graphics.Blit(IntialTexture, texture);
