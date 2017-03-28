@@ -1,10 +1,21 @@
-﻿Shader "Test/Water_01"
+﻿// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+
+Shader "Test/Water_01"
 {
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
 		_DynamicTex("Texture", 2D) = "white" {}
+		_SineAmplitude ("Amplitude", Float) = 1.0
+		//the following three are vectors so we can control more than one wave easily
+		_SineFrequency ("Frequency", Vector) = (1,1,0,0)
+		_Speed ("Speed", Vector) = (1,1,0,0)
+		_Steepness ("steepness", Vector) = (1,1,0,0)
+		//two direction vectors as we are using two gerstner waves
+		_Dir ("Wave Direction", Vector) = (1,1,0,0)
+		_Dir2 ("2nd Wave Direction", Vector) = (1,1,0,0)
 
+		_Smoothing("Normal Smoothing", float) = 10
 	}
 	SubShader
 	{
@@ -18,11 +29,20 @@
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
+
+			float _SineAmplitude;
+			float4 _SineFrequency;
+			float4 _Speed;
+			float4 _Steepness;
+			float4 _Dir;
+			float4 _Dir2;
+			
+			float _Smoothing;
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
 				float4 pos : SV_POSITION;
-				float3 wPos : TEXCOORD1;
+				float4 wPos : TEXCOORD1;
 			};
 
 			sampler2D _MainTex;
@@ -36,33 +56,41 @@
 			v2f vert (appdata_full v)
 			{
 				v2f o;
-				o.wPos =  mul(unity_ObjectToWorld, v.vertex).xyz;
+				
+				o.wPos =  mul(unity_ObjectToWorld, v.vertex);
+				//
 				dyno = tex2Dlod(_DynamicTex, float4(v.texcoord.xy, 0.0,0.0));
+				fixed4 main = tex2Dlod(_MainTex,float4(v.texcoord.xy, 0.0,0.0));
+
 				if(distance(o.wPos, _WorldSpaceCameraPos) > 128)
 				dyno.a = 0;
-
-				v.vertex.y += 1 - dyno.a * 10;
-				v.vertex.z -=  dyno.a * 10;
-				v.vertex.z +=  dyno.a * 10;
-
-				float A = 5;
-				float L = 50;
-				float w = 2 * 3.1416 / L;
-				float Q = 0.5;
-
-				float3 p0 = v.vertex.xyz;
-				float2 D = float2(0, 1);
-				float dotD = dot(p0.xz, D);
-				float C = cos(w * dotD + _Time.y /100);
-				float S = sin(w * dotD + _Time.y /100);
-
-				float3 P = float3 (p0.x + Q * A * C * D.x, A * S, p0.z + Q * A * C * D.y);
-				 
-				//v.vertex.y *= 1 - dyno.a;
-				o.pos = mul(UNITY_MATRIX_MVP, float4(P, 1));
-				o.uv = v.texcoord;
 				
+						v.vertex.y += 1 - dyno.a * 100;
+						v.vertex.z -=  dyno.a * 10;
+						v.vertex.z +=  dyno.a * 10;
 
+						float2 dir = _Dir.xy;
+						dir = normalize(dir) ; 
+						float dotprod = dot(dir, o.wPos.xz);
+						float disp = (_Time.x * _Speed.x);
+
+						//do the same for our second wave
+						float2 dir2 = _Dir2.xy;
+						dir2 = normalize(dir2);
+						float dotprod2 = dot(dir2, o.wPos.xz);
+						float disp2 = (_Time.x * _Speed.y);										
+						
+												
+						v.vertex.x += (_Steepness.x *_SineAmplitude) *_Dir.x * cos(_SineFrequency.x * (dotprod + disp));
+						v.vertex.z += (_Steepness.x *_SineAmplitude) *_Dir.y * cos(_SineFrequency.x * (dotprod + disp));
+						v.vertex.y += _SineAmplitude * - sin(_SineFrequency.x * (dotprod + disp));
+	
+						v.vertex.x += (_Steepness.y *_SineAmplitude) * _Dir2.x * cos(_SineFrequency.y * (dotprod2 + disp2));
+						v.vertex.z += (_Steepness.y *_SineAmplitude) *_Dir2.y *  cos (_SineFrequency.y * (dotprod2 + disp2));
+						v.vertex.y *= _SineAmplitude * sin(_SineFrequency.y * (dotprod2 + disp2));
+
+						o.pos = mul(UNITY_MATRIX_MVP,   v.vertex);
+						o.uv = v.texcoord;
 
 				return o;
 			}
@@ -76,7 +104,7 @@
 				if(distance(i.wPos, _WorldSpaceCameraPos) > 241)
 				dynoSmoke.a = 0;//lerp(0, dynoSmoke.a, distance(i.wPos, _WorldSpaceCameraPos) /241);
 
-				fixed4 col = main + dynoSmoke.a;
+				fixed4 col = main;
 				return col;
 			}
 			ENDCG

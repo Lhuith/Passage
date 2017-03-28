@@ -30,6 +30,9 @@ public class MapGenerator : MonoBehaviour {
 
     public bool autoUpdate;
 
+    public Color ColA;
+    public Color ColB;
+
     Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
     Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
 
@@ -38,7 +41,7 @@ public class MapGenerator : MonoBehaviour {
         MapData mapData = GenerateMapData(Vector2.zero);
 
         MapDisplay display = FindObjectOfType<MapDisplay>();
-        display.DrawMesh(MeshGenerator.GenerataTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, EditorPreviewLOD), TextureGenerator.TextureFromHeightMap(mapData.heightMap));
+        display.DrawMesh(MeshGenerator.GenerataTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, EditorPreviewLOD), TextureGenerator.TextureFromHeightMap(mapData.heightMap, mapData.colA, mapData.colB));
     }
 
 
@@ -106,7 +109,7 @@ public class MapGenerator : MonoBehaviour {
     MapData GenerateMapData(Vector2 centre)
     {
         float[,] heightMap = HeightMap.GenerateHeightMap(MapChunkSize, MapChunkSize, seed, heightScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
-        return new MapData(heightMap);
+        return new MapData(heightMap, ColA, ColB);
     }
 
 
@@ -134,9 +137,13 @@ public class MapGenerator : MonoBehaviour {
 public struct MapData
 {
     public readonly float[,] heightMap;
+    public readonly Color colA;
+    public readonly Color colB;
 
-    public MapData(float[,] heightMap)
+    public MapData(float[,] heightMap, Color colA, Color colB)
     {
         this.heightMap = heightMap;
+        this.colA = colA;
+        this.colB = colB;
     }
 }
